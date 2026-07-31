@@ -41,15 +41,24 @@ SocialGravity credential: a witness that depends on a long-lived secret belongin
 being witnessed is a weaker witness.
 
 It writes nothing rather than writing something it cannot stand behind. Before committing a head
-it insists on an external RFC 3161 anchor, on the anchored sequence being the live tree, on the
-Ed25519 signature verifying against the key pinned in
+it checks the Ed25519 signature against the key pinned in
 [socialgravity/receipts](https://github.com/socialgravity/receipts/blob/main/verifier/lib/keys.ts),
-and on every field it publishes matching the copy inside the signed bytes. The refusals are
-listed in [`scripts/mirror_head.py`](scripts/mirror_head.py).
+and it insists that every field it publishes matches the copy inside the signed bytes, because
+the endpoint repeats some of them outside the signature and an outer field that disagrees with
+the signed one is exactly how a doctored root would sneak in. The refusals are listed in
+[`scripts/mirror_head.py`](scripts/mirror_head.py).
 
-Two honest caveats. Head 30 was placed here by hand on 2026-07-30; automated mirroring starts at
-head 56. And GitHub's scheduler is best effort, so treat "hourly" as a target rather than a
-guarantee, and read the file dates as the real evidence of cadence.
+**Two kinds of evidence, and each file says which it carries.** An external RFC 3161 timestamp is
+better evidence than a git commit, but the anchoring job trails the live tree, so a head often
+has no stamp yet. Waiting for one would mean mirroring almost nothing, and a head witnessed only
+by its commit is still witnessed, because the commit time is GitHub's record and not ours. So
+every head gets mirrored, `anchor` holds the RFC 3161 receipt only when it covers that exact
+tree, and `anchor_note` says in words what the file is standing on. A head with no stamp of its
+own is still pinned once a later anchored head proves it by consistency.
+
+Two honest caveats. Head 30 was placed here by hand on 2026-07-30 and automated mirroring starts
+at head 56, so nothing witnesses the heads in between. And GitHub's scheduler is best effort, so
+read "hourly" as a target and the file dates as the real evidence of cadence.
 
 Check the live head yourself at any time:
 

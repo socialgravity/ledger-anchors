@@ -10,9 +10,6 @@ Refusals, all of which exit 0 and write nothing, because a missing file is hones
 wrong file is not:
 
   * the endpoint does not answer ok=true on contract_version 1
-  * the head carries no external RFC 3161 anchor yet
-  * the anchored head sequence is not the live tree size, so the signature and the
-    timestamp would be covering different trees
   * the Ed25519 signature over the head does not verify against the pinned key
   * a field repeated outside the signature disagrees with the signed copy of it
   * the file for this head already exists, which makes re-running a no-op
@@ -82,15 +79,32 @@ def main() -> None:
     if not tree_size or not root_hash:
         fail("response carried no tree head")
 
-    if not anchor or anchor.get("method") != "rfc3161":
-        skip(f"head {tree_size} is not externally anchored yet")
-
-    head_seq = str(anchor.get("head_seq", ""))
-    if head_seq != tree_size:
-        skip(
-            f"anchored head is seq {head_seq} but the live tree is {tree_size}: "
-            "waiting for the timestamp to catch up rather than mirroring a mixed record"
+    # An external RFC 3161 stamp is better evidence than a git commit, but waiting for one
+    # before mirroring anything is stricter than the evidence requires and it costs coverage:
+    # the anchor job trails the live tree, so insisting the two match meant writing nothing on
+    # most ticks. A head witnessed only by the commit is still witnessed, because the commit
+    # time is GitHub's record and not ours. So mirror every head, and say exactly which kind
+    # of evidence this file carries.
+    #
+    # The anchor block is only included when it covers THIS tree. An anchor for an earlier
+    # head sitting in a file about a later one would read as a timestamp on something it
+    # never stamped.
+    anchor_covers_this_head = bool(anchor) and str(anchor.get("head_seq", "")) == tree_size
+    if anchor_covers_this_head:
+        anchor_note = "externally timestamped by an RFC 3161 authority, see anchor.external_receipt"
+    elif anchor:
+        anchor_note = (
+            f"no external timestamp for this head yet: the newest one covers head "
+            f"{anchor.get('head_seq')}. The commit that added this file is the time evidence "
+            "until a later anchored head proves this one by consistency."
         )
+    else:
+        anchor_note = (
+            "no external timestamp for this head. The commit that added this file is the "
+            "time evidence."
+        )
+
+    head_seq = tree_size
 
     canonical = signature.get("canonical_json")
     sig_b64 = signature.get("sig_base64")
@@ -136,7 +150,8 @@ def main() -> None:
         "root_hash": root_hash,
         "sth_signed_at": signed_at,
         "sth_signature": signature,
-        "anchor": anchor,
+        "anchor": anchor if anchor_covers_this_head else None,
+        "anchor_note": anchor_note,
         "source": STH_URL,
         "mirrored_by": "github actions, .github/workflows/mirror.yml",
     }
