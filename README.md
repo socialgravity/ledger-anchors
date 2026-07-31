@@ -1,11 +1,18 @@
 # SocialGravity ledger anchors
 
-Hourly mirrored head hashes of SocialGravity's append-only identity licensing ledger.
+Mirrored head hashes of SocialGravity's append-only identity licensing ledger.
 
 Our ledger is a transparency log (RFC 6962). Its signed tree heads are already anchored with
 an independent RFC 3161 timestamp authority. This repository is the second, independent
 witness: each new head is committed here, so the record of what our ledger said, and when,
 is held on infrastructure we do not control the clock of and cannot quietly rewrite.
+
+**Current status, stated plainly because a witness that overclaims is worse than no witness.**
+This repository holds a manual seed at head 30 only. The automated mirror (`idl-ledger-anchor`)
+is written but not yet enabled, so heads are NOT arriving hourly yet and the ledger is already
+ahead of what you see here. Read the gap between the newest file below and the live head as
+exactly what it is: this witness is not live yet. When the job is enabled this note goes, and
+the file dates themselves become the evidence of the cadence rather than this sentence.
 
 ## What one anchor file contains
 
