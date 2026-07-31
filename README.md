@@ -25,23 +25,31 @@ independent RFC 3161 timestamp authority. This repository is the second, indepen
 each new head is committed here, so the record of what our ledger said, and when, is held on
 infrastructure whose clock we do not control and whose history we cannot silently edit.
 
-The published verifier uses it. Its `witnessed head` check proves the live log is a pure append
-of a head we published here earlier:
+The published verifier uses it. Its `witnessed head` check holds the live log against what we
+published here:
 
 ```text
   PASS           witnessed head
-                 today's tree of 56 is a pure append of the publicly witnessed head of
-                 30: nothing witnessed has been altered or removed
+                 the live tree equals the publicly witnessed head (size 56) byte for byte
 ```
 
-## Current status, stated plainly
+## How the mirror runs
 
-A witness that overclaims is worse than no witness, so: **this repository holds a manual seed at
-head 30 only.** The automated mirror is written and merged, but the job is not enabled yet, so
-heads are not arriving on a schedule and the live ledger is already well past what you see here.
-Read the gap between the newest file below and the live head as exactly what it is. When the job
-is enabled this note goes, and the file dates themselves become the evidence of the cadence
-rather than this sentence.
+Hourly, from a [GitHub Actions workflow](.github/workflows/mirror.yml) in this repository. It
+reads the public tree head endpoint and commits with the workflow's own token, so it holds no
+SocialGravity credential: a witness that depends on a long-lived secret belonging to the party
+being witnessed is a weaker witness.
+
+It writes nothing rather than writing something it cannot stand behind. Before committing a head
+it insists on an external RFC 3161 anchor, on the anchored sequence being the live tree, on the
+Ed25519 signature verifying against the key pinned in
+[socialgravity/receipts](https://github.com/socialgravity/receipts/blob/main/verifier/lib/keys.ts),
+and on every field it publishes matching the copy inside the signed bytes. The refusals are
+listed in [`scripts/mirror_head.py`](scripts/mirror_head.py).
+
+Two honest caveats. Head 30 was placed here by hand on 2026-07-30; automated mirroring starts at
+head 56. And GitHub's scheduler is best effort, so treat "hourly" as a target rather than a
+guarantee, and read the file dates as the real evidence of cadence.
 
 Check the live head yourself at any time:
 
