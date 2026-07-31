@@ -1,0 +1,49 @@
+# Pull the current anchored ledger head into this repository, hourly.
+#
+# This job holds no SocialGravity credential. It reads a public endpoint and commits with
+# the workflow's own GITHUB_TOKEN, which can write to this repository and nothing else.
+# The commit time is GitHub's record, which is the entire point of the mirror.
+#
+# It writes nothing rather than writing something it cannot stand behind: see the refusal
+# list in scripts/mirror_head.py.
+
+name: Mirror ledger head
+
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mirror
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    name: fetch the anchored head and commit it
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the signature checker
+        run: pip install --quiet cryptography
+
+      - name: Fetch and write the head
+        id: mirror
+        run: python scripts/mirror_head.py
+
+      - name: Commit
+        if: steps.mirror.outputs.wrote == 'true'
+        run: |
+          git config user.name "socialgravity-mirror"
+          git config user.email "alvaro@socialgravity.ai"
+          git add anchors latest.json
+          git commit -m "mirror ledger head ${{ steps.mirror.outputs.head_seq }}, root ${{ steps.mirror.outputs.root_hash }}"
+          git push
