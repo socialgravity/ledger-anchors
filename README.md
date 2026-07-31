@@ -48,17 +48,13 @@ the endpoint repeats some of them outside the signature and an outer field that 
 the signed one is exactly how a doctored root would sneak in. The refusals are listed in
 [`scripts/mirror_head.py`](scripts/mirror_head.py).
 
-**Two kinds of evidence, and each file says which it carries.** An external RFC 3161 timestamp is
-better evidence than a git commit, but the anchoring job trails the live tree, so a head often
-has no stamp yet. Waiting for one would mean mirroring almost nothing, and a head witnessed only
-by its commit is still witnessed, because the commit time is GitHub's record and not ours. So
-every head gets mirrored, `anchor` holds the RFC 3161 receipt only when it covers that exact
-tree, and `anchor_note` says in words what the file is standing on. A head with no stamp of its
-own is still pinned once a later anchored head proves it by consistency.
+Each file says what it stands on. An RFC 3161 timestamp is stronger evidence than a git commit,
+but the anchoring job trails the live tree, so `anchor` carries the timestamp only when it covers
+that exact tree, and `anchor_note` says which of the two the file rests on. A head with no stamp
+of its own gets pinned once a later anchored head proves it by consistency.
 
-Two honest caveats. Head 30 was placed here by hand on 2026-07-30 and automated mirroring starts
-at head 56, so nothing witnesses the heads in between. And GitHub's scheduler is best effort, so
-read "hourly" as a target and the file dates as the real evidence of cadence.
+This starts at head 56. Head 30 was placed by hand while the mirror was being built, and GitHub's
+scheduler is best effort, so the file dates are the record of cadence rather than this sentence.
 
 Check the live head yourself at any time:
 
