@@ -92,4 +92,3 @@ this history ever changes anyway, treat it as a finding, not housekeeping.
 The anchor data is released under [CC0 1.0](LICENSE). Copy it, mirror it, keep your own archive
 of it. A witness is more useful the more places it exists, and asking for attribution before you
 can hold us to our own hashes would be silly.
-</content>
