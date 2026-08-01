@@ -1,0 +1,25 @@
+{
+  "head_seq": "76",
+  "tree_size": "76",
+  "root_hash": "aa561b7d0c56d51244e874fb404de497a7678ea09d73ad7d6f4f8b221202b059",
+  "sth_signed_at": "2026-08-01T06:43:46.749Z",
+  "sth_signature": {
+    "algorithm": "Ed25519",
+    "company_key_id": "idl-signing-v1",
+    "sig_base64": "Bep3mFeJs8lQmYzX0OMY2dluHr3DzV3erVIgR4BUGOJlrLPE5fnrU2K3wqk1RFiu8sh2Q0/0X7JgHrkwu49SCg==",
+    "public_key_spki_b64": "MCowBQYDK2VwAyEAXzTD6OwOCWzDk9K4zLoOeHSpGTO+b25SNUvkmqmqRE4=",
+    "signed_payload": {
+      "statement": "transparency_log_tree_head",
+      "tree_size": "76",
+      "root_hash": "aa561b7d0c56d51244e874fb404de497a7678ea09d73ad7d6f4f8b221202b059",
+      "signed_at": "2026-08-01T06:43:46.749Z"
+    },
+    "canonical_json": "{\"root_hash\":\"aa561b7d0c56d51244e874fb404de497a7678ea09d73ad7d6f4f8b221202b059\",\"signed_at\":\"2026-08-01T06:43:46.749Z\",\"statement\":\"transparency_log_tree_head\",\"tree_size\":\"76\"}",
+    "recipe": "Ed25519 signature over the canonical JSON (object keys sorted lexicographically at every level, no whitespace, UTF-8 bytes) of {statement, tree_size, root_hash, signed_at}. statement is the constant 'transparency_log_tree_head', which keeps this signature from ever being read as a licence, a credential or a chain anchor under the same key. tree_size is a decimal string, not a number, so no verifier has to agree with us about integer rendering. root_hash is the RFC 6962 Merkle root, hex, over leaves sha256(0x00 || entry_hash_bytes) combined as sha256(0x01 || left || right), splitting each subtree at the largest power of two below its size; the empty tree is sha256 of no bytes. signed_at is JavaScript Date.toISOString(). Fetch the ordered entry hashes from this endpoint and recompute the root yourself: that, not the signature, is what makes the head checkable. The signature proves the head came from SocialGravity. It does NOT prove the tree had that size on the date it carries; only an external timestamp on the head (see the anchor block) rules out back-dating.",
+    "self_check_passed": true
+  },
+  "anchor": null,
+  "anchor_note": "no external timestamp for this head yet: the newest one covers head 78. The commit that added this file is the time evidence until a later anchored head proves this one by consistency.",
+  "source": "https://id.socialgravity.ai/functions/v1/idl-log-sth",
+  "mirrored_by": "github actions, .github/workflows/mirror.yml"
+}
