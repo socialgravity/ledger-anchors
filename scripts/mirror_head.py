@@ -89,14 +89,34 @@ def main() -> None:
     # The anchor block is only included when it covers THIS tree. An anchor for an earlier
     # head sitting in a file about a later one would read as a timestamp on something it
     # never stamped.
-    anchor_covers_this_head = bool(anchor) and str(anchor.get("head_seq", "")) == tree_size
+    #
+    # "Covers" is decided in TREE SIZES, never by comparing the anchor's head_seq to tree_size:
+    # head_seq is a LEDGER sequence and tree_size is a COUNT of leaves, and they drift apart as
+    # soon as one ledger entry is not a log leaf (live 2026-08-23: anchor at seq 196, tree 191).
+    # Until 2026-08-23 this script compared the two for equality and wrote `anchor: null` with
+    # "no external timestamp for this head yet" on heads the RFC 3161 stamp fully covered, while
+    # the receipts verifier reported the same anchor as PASS. The endpoint now publishes the
+    # translation on the anchor itself (covers_tree_size); an older response without it falls
+    # back to the old equality, which under-claims rather than over-claims.
+    covers = str((anchor or {}).get("covers_tree_size", "") or "")
+    if anchor and covers.isdigit() and tree_size.isdigit():
+        anchor_covers_this_head = int(covers) >= int(tree_size)
+    else:
+        anchor_covers_this_head = bool(anchor) and str((anchor or {}).get("head_seq", "")) == tree_size
     if anchor_covers_this_head:
-        anchor_note = "externally timestamped by an RFC 3161 authority, see anchor.external_receipt"
+        anchor_note = (
+            "externally timestamped by an RFC 3161 authority, see anchor.external_receipt. "
+            f"The anchor sits at ledger seq {anchor.get('head_seq')}"
+            + (f", which is tree size {covers}" if covers else "")
+            + f"; this head is tree size {tree_size}, so it is covered."
+        )
     elif anchor:
         anchor_note = (
-            f"no external timestamp for this head yet: the newest one covers head "
-            f"{anchor.get('head_seq')}. The commit that added this file is the time evidence "
-            "until a later anchored head proves this one by consistency."
+            "no external timestamp covers this head yet: the newest one sits at ledger seq "
+            f"{anchor.get('head_seq')}"
+            + (f" (tree size {covers})" if covers else "")
+            + f", behind this head's tree size {tree_size}. The commit that added this file is "
+            "the time evidence until a later anchored head proves this one by consistency."
         )
     else:
         anchor_note = (
