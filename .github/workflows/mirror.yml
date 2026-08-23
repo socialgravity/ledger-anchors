@@ -1,4 +1,7 @@
-# Pull the current anchored ledger head into this repository, hourly.
+# Pull the current anchored ledger head into this repository, every ten minutes.
+#
+# Ten minutes because the upstream anchor moved from hourly to every five minutes on 2026-08-23;
+# the mirror only commits when the head actually moved, so a quiet ledger costs nothing here.
 #
 # This job holds no SocialGravity credential. It reads a public endpoint and commits with
 # the workflow's own GITHUB_TOKEN, which can write to this repository and nothing else.
@@ -11,7 +14,7 @@ name: Mirror ledger head
 
 on:
   schedule:
-    - cron: "23 * * * *"
+    - cron: "4-54/10 * * * *"
   workflow_dispatch:
 
 permissions:
